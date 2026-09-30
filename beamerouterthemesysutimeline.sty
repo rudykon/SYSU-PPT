@@ -1,0 +1,130 @@
+% A clickable section/subsection timeline for the SYSU Beamer template.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerouterthemesysutimeline}[2026/09/29 SYSU timeline]
+\mode<presentation>
+\RequirePackage{tikz}
+
+\newif\ifsysutimeline@subsections
+\DeclareOptionBeamer{subsections}{\sysutimeline@subsectionstrue}
+\ProcessOptionsBeamer
+
+\setbeamercolor{timeline}{use=structure,fg=structure.fg,bg=white}
+\setbeamercolor{timeline pending}{fg=black!40,bg=black!18}
+\setbeamerfont{timeline}{size=\fontsize{6.5}{7.5}\selectfont}
+\newcount\sysutimeline@count
+\newcount\sysutimeline@active
+\newdimen\sysutimeline@width
+\newdimen\sysutimeline@labelwidth
+
+% Read Beamer's existing .nav entries; no additional auxiliary file is needed.
+% Store labels without expanding commands such as \& or CJK text.
+\def\sysutimeline@add#1#2{%
+  \advance\sysutimeline@count by 1\relax
+  \expandafter\def\csname sysutimeline@label@\the\sysutimeline@count\endcsname{#2}%
+  \expandafter\def\csname sysutimeline@page@\the\sysutimeline@count\endcsname{#1}%
+  \ifnum#1>\c@page\else
+    \sysutimeline@active=\sysutimeline@count
+  \fi
+}
+\def\sysutimeline@collect{%
+  \sysutimeline@count=0
+  \sysutimeline@active=0
+  \def\slideentry##1##2##3##4##5##6{}%
+  \def\sectionentry##1##2##3##4##5{%
+    \ifsysutimeline@subsections\else
+      \ifnum##5=\c@part
+        \sysutimeline@add{##3}{##2}%
+      \fi
+    \fi
+  }%
+  \def\beamer@subsectionentry##1##2##3##4##5{%
+    \ifsysutimeline@subsections
+      \ifnum##1=\c@part
+        \ifnum##2=\c@section
+          \sysutimeline@add{##4}{##5}%
+        \fi
+      \fi
+    \fi
+  }%
+  \dohead
+}
+
+\newcommand{\insertsysutimeline}{%
+  \begingroup
+  \usebeamercolor{timeline}%
+  \usebeamercolor{timeline pending}%
+  \sysutimeline@collect
+  % Reserve the right end of the same footer row for the frame counter.
+  \sysutimeline@width=\dimexpr\paperwidth-28mm\relax
+  \begin{tikzpicture}[x=\sysutimeline@width,y=1mm]
+    % Reserve a stable height on every frame, including the first compile.
+    \path[use as bounding box] (0,1.5) rectangle (1,10);
+    \ifnum\sysutimeline@count>0
+      \pgfmathsetmacro{\sysutimeline@first}{0.5/\the\sysutimeline@count}
+      \pgfmathsetmacro{\sysutimeline@last}{1-\sysutimeline@first}
+      \draw[timeline pending.bg,line width=.7pt]
+        (\sysutimeline@first,7) -- (\sysutimeline@last,7);
+      \ifnum\sysutimeline@active>0
+        \pgfmathsetmacro{\sysutimeline@progress}{%
+          (\the\sysutimeline@active-0.5)/\the\sysutimeline@count}
+        \draw[timeline.fg,line width=1pt]
+          (\sysutimeline@first,7) -- (\sysutimeline@progress,7);
+      \fi
+      \sysutimeline@labelwidth=\sysutimeline@width
+      \divide\sysutimeline@labelwidth by\sysutimeline@count
+      \advance\sysutimeline@labelwidth by -2mm
+      \foreach \i in {1,...,\the\sysutimeline@count}{%
+        \pgfmathsetmacro{\sysutimeline@x}{(\i-0.5)/\the\sysutimeline@count}
+        \def\sysutimeline@textcolor{timeline pending.fg}%
+        \def\sysutimeline@weight{\mdseries}%
+        \ifnum\i>\sysutimeline@active
+          \draw[draw=timeline pending.fg,fill=timeline.bg,line width=.6pt]
+            (\sysutimeline@x,7) circle[radius=.75mm];
+        \else
+          \def\sysutimeline@textcolor{timeline.fg}%
+          \fill[timeline.fg] (\sysutimeline@x,7) circle[radius=.75mm];
+          \ifnum\i=\sysutimeline@active
+            \def\sysutimeline@weight{\bfseries}%
+            \draw[timeline.fg,line width=.6pt]
+              (\sysutimeline@x,7) circle[radius=1.25mm];
+          \fi
+        \fi
+        % Give both the marker and its label a clickable target.
+        \node[inner sep=0pt] at (\sysutimeline@x,7) {%
+          \hyperlink{Navigation\csname sysutimeline@page@\i\endcsname}{%
+            \phantom{\rule{3mm}{3mm}}}};
+        \node[anchor=north,align=center,inner sep=0pt,
+          text width=\sysutimeline@labelwidth,text=\sysutimeline@textcolor,
+          font=\usebeamerfont{timeline}\sysutimeline@weight]
+          at (\sysutimeline@x,4.8) {%
+            \hyperlink{Navigation\csname sysutimeline@page@\i\endcsname}{%
+              \csname sysutimeline@label@\i\endcsname}};
+      }
+    \else
+      % Documents without sections still get a frame-based progress bar.
+      \pgfmathsetmacro{\sysutimeline@progress}{%
+        min(1,max(0,\insertframenumber/max(1,\inserttotalframenumber)))}
+      \draw[timeline pending.bg,line width=.7pt] (0,7) -- (1,7);
+      \draw[timeline.fg,line width=1pt] (0,7) -- (\sysutimeline@progress,7);
+    \fi
+  \end{tikzpicture}%
+  \endgroup
+}
+
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox to\paperwidth{%
+    \hskip8mm%
+    \insertsysutimeline\hfil%
+    \raisebox{1mm}{%
+      \usebeamerfont{date in head/foot}%
+      \usebeamercolor[fg]{date in head/foot}%
+      \insertframenumber\, /\,\inserttotalframenumber%
+    }%
+    \hskip2mm%
+  }%
+  \vskip.3mm%
+}
+
+\mode<all>
+\endinput

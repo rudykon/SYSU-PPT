@@ -1,0 +1,33 @@
+# LaTeX auxiliary files; keep the compiled example PDFs and preview images.
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.dvi
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.lof
+*.lot
+*.loa
+*.listing
+*.bak
+
+# Local TeX package-manager state; package sources remain versioned.
+/.texmf/tlpkg/
+/.texmf/ls-R
+
+# Local credentials and OS metadata.
+.env
+.env.*
+*_token.json
+.DS_Store
+Thumbs.db
