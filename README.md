@@ -75,6 +75,11 @@ latexmk -interaction=nonstopmode -halt-on-error main.tex
 | `sysu_logo.png` / `sysu_horizontal.png` | 封面和页眉校徽图片 |
 | `.texmf/tex/latex/` | lipsum、multirow、pdfcol、tcolorbox、tikzfill 补充依赖 |
 
+## 致谢
+
+感谢 [sysuexam/SYSU-PPT](https://github.com/sysuexam/SYSU-PPT) 项目及其维护者
+分享中山大学 PPT 模板和相关资源。
+
 ## 来源说明
 
 Verona 主题文件保留 Ivan Valbusa 的原作者信息和 LPPL 许可声明。
